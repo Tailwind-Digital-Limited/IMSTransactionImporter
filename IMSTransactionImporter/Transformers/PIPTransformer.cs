@@ -130,8 +130,6 @@ public class PIPTransformer : ITransactionTransformer
         using var reader = new StringReader(processedContent);
         using var csv = new CsvReader(reader, config);
 
-        csv.Read();
-
         // Register custom date converter
         csv.Context.RegisterClassMap<PIPTransactionMap>();
 
