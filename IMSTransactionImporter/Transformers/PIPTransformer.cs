@@ -4,6 +4,7 @@ using CsvHelper.Configuration.Attributes;
 using System.Globalization;
 using CsvHelper.Configuration;
 using CsvHelper.TypeConversion;
+using IMSTransactionImporter.Extensions;
 using IMSTransactionImporter.Interfaces;
 
 namespace IMSTransactionImporter.Transformers;
@@ -56,20 +57,22 @@ public class PIPTransformer : ITransactionTransformer
 
     public void SetFundCodeAndAccountReference(IMSProcessedTransaction processedTransaction)
     {
-        var refNo = processedTransaction.Reference;
+        var accountReference = "";
+        var fundCode = "";
+            
         // Early return if refNo is null or too short
-        if (string.IsNullOrEmpty(refNo) || refNo.Length < 8)
+        if (string.IsNullOrEmpty(processedTransaction.Reference) || processedTransaction.Reference.Length < 8)
             return;
 
         // Check if reference number starts with '98265029'
-        if (refNo.StartsWith("98265029"))
+        if (processedTransaction.Reference.StartsWith("98265029"))
         {
             // Get positions with null checking
-            var pos12 = refNo.Length >= 12 ? refNo[11].ToString() : "";
-            var pos16 = refNo.Length >= 16 ? refNo[15].ToString() : "";
-            var pos1617 = refNo.Length >= 17 ? refNo.Substring(15, 2) : "";
+            var pos12 = processedTransaction.Reference.Length >= 12 ? processedTransaction.Reference[11].ToString() : "";
+            var pos16 = processedTransaction.Reference.Length >= 16 ? processedTransaction.Reference[15].ToString() : "";
+            var pos1617 = processedTransaction.Reference.Length >= 17 ? processedTransaction.Reference.Substring(15, 2) : "";
 
-            var fundCode = "";
+            
 
             // Fund Code logic
             if (pos12 is "7" or "6" && (pos16 == "6" || pos1617 == "06"))
@@ -86,21 +89,24 @@ public class PIPTransformer : ITransactionTransformer
             }
 
             // Reference Number transformation logic
-            if (pos12 is "2" or "5" && refNo.Length >= 22)
+            if (pos12 is "2" or "5" && processedTransaction.Reference.Length >= 22)
             {
-                refNo = ReplaceLettersWithZero(refNo.Substring(16, 6));
+                accountReference = ReplaceLettersWithZero(processedTransaction.Reference.Substring(16, 6));
+                accountReference = accountReference.AddCouncilTaxCheckDigit(); // Logic is the same for Non Domestic Rates
             }
-            else if ((pos12 == "6" || pos12 == "7") && refNo.Length >= 22)
+            else if ((pos12 == "6" || pos12 == "7") && processedTransaction.Reference.Length >= 22)
             {
-                refNo = ReplaceLettersWithZero(refNo.Substring(15, 7));
+                accountReference = ReplaceLettersWithZero(processedTransaction.Reference.Substring(15, 7));
+                accountReference = accountReference.AddHousingBenefitsOverpayment7CheckDigit(); // Logic is the same for Sundry Debtors
             }
-            else if (pos12 == "8" && refNo.Length >= 22)
+            else if (pos12 == "8" && processedTransaction.Reference.Length >= 22)
             {
-                refNo = ReplaceLettersWithZero(refNo.Substring(14, 8));
+                accountReference = ReplaceLettersWithZero(processedTransaction.Reference.Substring(14, 8));
+                accountReference = accountReference.AddHousingRentsCheckDigit();
             }
 
             processedTransaction.FundCode = fundCode;
-            processedTransaction.AccountReference = refNo;
+            processedTransaction.AccountReference = accountReference;
         }
     }
 
