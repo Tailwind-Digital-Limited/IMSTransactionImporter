@@ -1,4 +1,4 @@
-namespace IMSTransactionImporter.InternalClasses;
+namespace IMSTransactionImporter.Classes;
 
 public class IMSImport
 {

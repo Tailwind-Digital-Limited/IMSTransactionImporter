@@ -2,8 +2,9 @@
 
 using System.Text;
 using System.Text.Json;
+using IMSTransactionImporter.Classes;
+using IMSTransactionImporter.ExportGenerators;
 using IMSTransactionImporter.Interfaces;
-using IMSTransactionImporter.InternalClasses;
 using IMSTransactionImporter.Settings;
 using IMSTransactionImporter.Transformers;
 using Microsoft.Extensions.Configuration;
@@ -16,11 +17,11 @@ var apiSettings = configuration.GetSection(ApiSettings.SectionName).Get<ApiSetti
 
 var imports = new List<IMSImport>
 {
-    new()
-    {
-        ImportType = ImportType.PIP,
-        FilePath = "CSS_PIP_510_250516081048.csv"
-    }
+    // new()
+    // {
+    //     ImportType = ImportType.PIP,
+    //     FilePath = "CSS_PIP_510_250516081048.csv"
+    // }
     // new()
     // {
     //     ImportType = ImportType.Bailiff,
@@ -67,6 +68,42 @@ foreach (var imsImport in imports)
     }
 }
 
+
+var exports = new List<IMSExport>
+{
+    // new()
+    // {
+    //     ExportType = ExportType.GeneralLedger,
+    //     FileName = $"GLINC{DateTime.Now:dd-MM-yyyy-HH-mm-ss}.xlsx",
+    //     StartDateTime = new DateTime(2025, 07, 02, 17, 00, 00),
+    //     EndDateTime = new DateTime(2025, 07, 04, 16, 59, 59),
+    // },
+    new()
+    {
+        ExportType = ExportType.SundryDebtors,
+        FileName = $"SDPAY{DateTime.Now:dd}.txt",
+        StartDateTime = new DateTime(2025, 07, 02, 17, 00, 00),
+        EndDateTime = new DateTime(2025, 07, 04, 16, 59, 59),
+    },
+    
+};
+
+foreach (var imsExport in exports)
+{
+    // Get File Contents
+    Console.WriteLine($"Extract data from IMS {imsExport.ExportType}");
+
+
+    // Get Transformer for the import type
+    Console.WriteLine($"Getting generator for {imsExport.ExportType}");
+    var generator = GetGenerator(imsExport.ExportType);
+
+    // Transform Data
+    Console.WriteLine($"Generating export data");
+    imsExport.FileName = GetExportFilePath(imsExport.FileName);
+    await generator.Generate(imsExport, apiSettings.IMSApiKey);
+}
+
 Console.ReadKey();
 return;
 
@@ -79,11 +116,25 @@ string GetFileContents(string filePath)
     return fileContents;
 }
 
+string GetExportFilePath(string fileName)
+{
+    var currentDirectory = AppDomain.CurrentDomain.BaseDirectory;
+    return Path.Combine(currentDirectory, "Exports", fileName);
+}
+
 static ITransactionTransformer GetTransformer(ImportType importType) => importType switch
 {
     ImportType.PIP => new PIPTransformer(),
     ImportType.Bailiff => new BailiffTransformer(),
     ImportType.BankFile => throw new NotImplementedException(),
+    // Add additional transformers here
+    _ => throw new NotImplementedException()
+};
+
+static IExportGenerator GetGenerator(ExportType exportType) => exportType switch
+{
+    ExportType.GeneralLedger => new GeneralLedgerExportGenerator(),
+    ExportType.SundryDebtors => new SundryDebtorExportGenerator(),
     // Add additional transformers here
     _ => throw new NotImplementedException()
 };

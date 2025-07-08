@@ -1,4 +1,4 @@
-using IMSTransactionImporter.InternalClasses;
+using IMSTransactionImporter.Classes;
 using IMSTransactionImporter.Transformers;
 
 namespace IMSTransactionsImporter.Tests;

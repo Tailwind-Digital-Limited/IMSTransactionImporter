@@ -4,6 +4,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IMSTransactionImporter", "I
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IMSTransactionsImporter.Tests", "IMSTransactionsImporter.Tests\IMSTransactionsImporter.Tests.csproj", "{EEAAB5F2-2430-4DEA-B2E9-D4B1EF1364E0}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Audacia.Spreadsheets", "Audacia.Spreadsheets\Audacia.Spreadsheets.csproj", "{D7B61D95-106B-42A5-92C9-4A3A73F53BCE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -18,5 +20,9 @@ Global
 		{EEAAB5F2-2430-4DEA-B2E9-D4B1EF1364E0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EEAAB5F2-2430-4DEA-B2E9-D4B1EF1364E0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EEAAB5F2-2430-4DEA-B2E9-D4B1EF1364E0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D7B61D95-106B-42A5-92C9-4A3A73F53BCE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D7B61D95-106B-42A5-92C9-4A3A73F53BCE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D7B61D95-106B-42A5-92C9-4A3A73F53BCE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D7B61D95-106B-42A5-92C9-4A3A73F53BCE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

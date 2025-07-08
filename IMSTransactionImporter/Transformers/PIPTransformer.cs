@@ -1,9 +1,9 @@
-using IMSTransactionImporter.InternalClasses;
 using CsvHelper;
 using CsvHelper.Configuration.Attributes;
 using System.Globalization;
 using CsvHelper.Configuration;
 using CsvHelper.TypeConversion;
+using IMSTransactionImporter.Classes;
 using IMSTransactionImporter.Extensions;
 using IMSTransactionImporter.Interfaces;
 

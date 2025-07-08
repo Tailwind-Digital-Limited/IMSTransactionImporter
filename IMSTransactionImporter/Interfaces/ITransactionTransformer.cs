@@ -1,4 +1,4 @@
-using IMSTransactionImporter.InternalClasses;
+using IMSTransactionImporter.Classes;
 
 namespace IMSTransactionImporter.Interfaces;
 
