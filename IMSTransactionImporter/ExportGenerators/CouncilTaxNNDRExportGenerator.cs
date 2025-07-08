@@ -70,6 +70,7 @@ public class CouncilTaxNNDRExportGenerator : IExportGenerator
             return "";
         }
 
+        // If the transaction was collected by a bailiff the the narrative will contain the liability number
         return transactionNarrative.Contains("Liability") ? transactionNarrative[..7].PadLeft(10, ' ') : Filler(10);
     }
 
