@@ -31,6 +31,9 @@ public class CouncilTaxNNDRExportGenerator : IExportGenerator
     private static void CreateTextFile(List<CouncilTaxNNDRExportRow> rows, string exportFileName)
     {
         var sb = new StringBuilder();
+        // Header row
+        sb.AppendLine($"{DateTime.Now:dd MMM yyyy}*{DateTime.Now:HH:mm:ss}00002{Filler(26)}");
+        // Data rows
         foreach (var row in rows)
         {
             sb.AppendLine(
