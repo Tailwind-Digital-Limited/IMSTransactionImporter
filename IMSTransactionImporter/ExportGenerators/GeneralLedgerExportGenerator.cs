@@ -5,9 +5,6 @@ using IMSTransactionImporter.Interfaces;
 using LocalGovIMSClient;
 using LocalGovIMSClient.Api.ProcessedTransactions;
 using LocalGovIMSClient.Models;
-using Microsoft.Kiota.Abstractions.Authentication;
-using Microsoft.Kiota.Http.HttpClientLibrary;
-using OfficeOpenXml;
 
 namespace IMSTransactionImporter.ExportGenerators;
 
@@ -17,11 +14,8 @@ public class GeneralLedgerExportGenerator : IExportGenerator
     private List<MethodOfPaymentModel>? _methodsOfPayment = [];
     private List<AccountHolderModel>? _accountHolders = [];
 
-    public async Task Generate(IMSExport export, string apiKey)
+    public async Task Generate(IMSExport export, LocalGovIMSAPIClient client)
     {
-        // Get the API client 
-        var client = GetLocalGovIMSApiClient(apiKey);
-
         // Get the funds and MOPS from the API - this includes all the metadata for the funds
         _allFunds = await client.Api.Funds.GetAsync();
         _methodsOfPayment = await client.Api.MethodOfPayments.GetAsync();
@@ -319,18 +313,6 @@ public class GeneralLedgerExportGenerator : IExportGenerator
         var response = await client.Api.ProcessedTransactions.GetAsync(r => r.QueryParameters = parameters);
 
         return response;
-    }
-
-    private static LocalGovIMSAPIClient GetLocalGovIMSApiClient(string apiKey)
-    {
-        var authenticationProvider = new ApiKeyAuthenticationProvider(
-            apiKey, "X-API-Key", ApiKeyAuthenticationProvider.KeyLocation.Header);
-
-        var requestAdapter = new HttpClientRequestAdapter(authenticationProvider);
-
-        var client = new LocalGovIMSAPIClient(requestAdapter);
-
-        return client;
     }
 
     public class LedgerRow

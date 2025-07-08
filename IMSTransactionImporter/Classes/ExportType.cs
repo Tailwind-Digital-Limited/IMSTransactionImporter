@@ -4,4 +4,7 @@ public enum ExportType
 {
     GeneralLedger,
     SundryDebtors,
+    HousingRents,
+    HousingBenefitsOverPayments,
+    CouncilTaxNNDR
 }

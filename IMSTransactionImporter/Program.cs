@@ -7,13 +7,18 @@ using IMSTransactionImporter.ExportGenerators;
 using IMSTransactionImporter.Interfaces;
 using IMSTransactionImporter.Settings;
 using IMSTransactionImporter.Transformers;
+using LocalGovIMSClient;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Kiota.Abstractions.Authentication;
+using Microsoft.Kiota.Http.HttpClientLibrary;
 
 var builder = new ConfigurationBuilder().AddUserSecrets<ApiSettings>();
 var configuration = builder.Build();
 
 var apiSettings = configuration.GetSection(ApiSettings.SectionName).Get<ApiSettings>()
                   ?? throw new InvalidOperationException("API settings are not configured");
+
+var apiClient = GetLocalGovIMSApiClient(apiSettings.IMSApiKey);
 
 var imports = new List<IMSImport>
 {
@@ -78,10 +83,31 @@ var exports = new List<IMSExport>
     //     StartDateTime = new DateTime(2025, 07, 02, 17, 00, 00),
     //     EndDateTime = new DateTime(2025, 07, 04, 16, 59, 59),
     // },
+    // new()
+    // {
+    //     ExportType = ExportType.SundryDebtors,
+    //     FileName = $"SDPAY{DateTime.Now:dd}.txt",
+    //     StartDateTime = new DateTime(2025, 07, 02, 17, 00, 00),
+    //     EndDateTime = new DateTime(2025, 07, 04, 16, 59, 59),
+    // },
+    // new()
+    // {
+    //     ExportType = ExportType.HousingRents,
+    //     FileName = $"CASH1.dat",
+    //     StartDateTime = new DateTime(2025, 07, 02, 17, 00, 00),
+    //     EndDateTime = new DateTime(2025, 07, 04, 16, 59, 59),
+    // },
+    // new()
+    // {
+    //     ExportType = ExportType.HousingBenefitsOverPayments,
+    //     FileName = $"PAYMENTS.dat",
+    //     StartDateTime = new DateTime(2025, 07, 02, 17, 00, 00),
+    //     EndDateTime = new DateTime(2025, 07, 04, 16, 59, 59),
+    // },
     new()
     {
-        ExportType = ExportType.SundryDebtors,
-        FileName = $"SDPAY{DateTime.Now:dd}.txt",
+        ExportType = ExportType.CouncilTaxNNDR,
+        FileName = $"IWORLD.pay",
         StartDateTime = new DateTime(2025, 07, 02, 17, 00, 00),
         EndDateTime = new DateTime(2025, 07, 04, 16, 59, 59),
     },
@@ -101,7 +127,7 @@ foreach (var imsExport in exports)
     // Transform Data
     Console.WriteLine($"Generating export data");
     imsExport.FileName = GetExportFilePath(imsExport.FileName);
-    await generator.Generate(imsExport, apiSettings.IMSApiKey);
+    await generator.Generate(imsExport, apiClient);
 }
 
 Console.ReadKey();
@@ -135,6 +161,9 @@ static IExportGenerator GetGenerator(ExportType exportType) => exportType switch
 {
     ExportType.GeneralLedger => new GeneralLedgerExportGenerator(),
     ExportType.SundryDebtors => new SundryDebtorExportGenerator(),
+    ExportType.HousingRents => new RentsExportGenerator(),
+    ExportType.HousingBenefitsOverPayments => new HousingBenefitOverPaymentExportGenerator(),
+    ExportType.CouncilTaxNNDR => new CouncilTaxNNDRExportGenerator(),
     // Add additional transformers here
     _ => throw new NotImplementedException()
 };
@@ -161,4 +190,14 @@ async Task<bool> SendDataToIMS(string url, string apiKey, IMSTransactionImport i
     }
 
     return false;
+}
+
+static LocalGovIMSAPIClient GetLocalGovIMSApiClient(string apiKey)
+{
+    var authenticationProvider = new ApiKeyAuthenticationProvider(
+        apiKey, "X-API-Key", ApiKeyAuthenticationProvider.KeyLocation.Header);
+
+    var requestAdapter = new HttpClientRequestAdapter(authenticationProvider);
+
+    return new LocalGovIMSAPIClient(requestAdapter);
 }

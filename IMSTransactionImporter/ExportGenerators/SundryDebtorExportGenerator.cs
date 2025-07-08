@@ -12,11 +12,8 @@ namespace IMSTransactionImporter.ExportGenerators;
 
 public class SundryDebtorExportGenerator : IExportGenerator
 {
-    public async Task Generate(IMSExport export, string apiKey)
+    public async Task Generate(IMSExport export, LocalGovIMSAPIClient client)
     {
-        // Get the API client 
-        var client = GetLocalGovIMSApiClient(apiKey);
-        
         var fundsCodesForExport = new[] {"7"};
 
         // Get Processed transactions for the export period
@@ -42,7 +39,6 @@ public class SundryDebtorExportGenerator : IExportGenerator
                 $"{row.ICMRef},{row.MethodOfPayment},{row.ExportDate},{row.AccountRef1},{row.TransDate},{row.Filler},{row.Amount},{row.AccountRef2},{row.TransactionDate}");
         }
 
-        sb.AppendLine();
         File.WriteAllText(exportFileName, sb.ToString());
     }
 
@@ -76,18 +72,6 @@ public class SundryDebtorExportGenerator : IExportGenerator
         var response = await client.Api.ProcessedTransactions.GetAsync(r => r.QueryParameters = parameters);
 
         return response;
-    }
-
-    private static LocalGovIMSAPIClient GetLocalGovIMSApiClient(string apiKey)
-    {
-        var authenticationProvider = new ApiKeyAuthenticationProvider(
-            apiKey, "X-API-Key", ApiKeyAuthenticationProvider.KeyLocation.Header);
-
-        var requestAdapter = new HttpClientRequestAdapter(authenticationProvider);
-
-        var client = new LocalGovIMSAPIClient(requestAdapter);
-
-        return client;
     }
 
     public class SundryDebtorRow
