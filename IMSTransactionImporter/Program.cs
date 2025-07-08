@@ -104,10 +104,17 @@ var exports = new List<IMSExport>
     //     StartDateTime = new DateTime(2025, 07, 02, 17, 00, 00),
     //     EndDateTime = new DateTime(2025, 07, 04, 16, 59, 59),
     // },
+    // new()
+    // {
+    //     ExportType = ExportType.CouncilTaxNNDR,
+    //     FileName = $"IWORLD.pay",
+    //     StartDateTime = new DateTime(2025, 07, 02, 17, 00, 00),
+    //     EndDateTime = new DateTime(2025, 07, 04, 16, 59, 59),
+    // },
     new()
     {
-        ExportType = ExportType.CouncilTaxNNDR,
-        FileName = $"IWORLD.pay",
+        ExportType = ExportType.SMEProfessional,
+        FileName = $"GBCLettings_{DateTime.Now:dd-MMM-yy}.csv",
         StartDateTime = new DateTime(2025, 07, 02, 17, 00, 00),
         EndDateTime = new DateTime(2025, 07, 04, 16, 59, 59),
     },
@@ -164,6 +171,7 @@ static IExportGenerator GetGenerator(ExportType exportType) => exportType switch
     ExportType.HousingRents => new RentsExportGenerator(),
     ExportType.HousingBenefitsOverPayments => new HousingBenefitOverPaymentExportGenerator(),
     ExportType.CouncilTaxNNDR => new CouncilTaxNNDRExportGenerator(),
+    ExportType.SMEProfessional => new SMEProfessionalExportGenerator(),
     // Add additional transformers here
     _ => throw new NotImplementedException()
 };

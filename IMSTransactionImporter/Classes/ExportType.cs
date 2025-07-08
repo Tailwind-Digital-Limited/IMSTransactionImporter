@@ -6,5 +6,6 @@ public enum ExportType
     SundryDebtors,
     HousingRents,
     HousingBenefitsOverPayments,
-    CouncilTaxNNDR
+    CouncilTaxNNDR,
+    SMEProfessional
 }
