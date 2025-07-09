@@ -7,5 +7,6 @@ public enum ExportType
     HousingRents,
     HousingBenefitsOverPayments,
     CouncilTaxNNDR,
-    SMEProfessional
+    SMEProfessional,
+    ParkingFines
 }

@@ -38,7 +38,7 @@ public class BailiffTransformer : ITransactionTransformer
             AccountReference = bailiff.CustomerReference,
             MopCode = "20",
             InternalReference = GenerateRandom16CharString(),
-            PspReference = $"Bailiff-{DateTime.Now:yyyyMMdd}-{bailiff.RowNumber}",
+            PspReference = $"BLF-{DateTime.Now:yyMMdd}-{bailiff.RowNumber}",
             OfficeCode = "S",
             EntryDate = DateTime.Now.ToString("O"),
             TransactionDate = bailiff.TransactionDate.ToString("O"),

@@ -93,30 +93,37 @@ var exports = new List<IMSExport>
     // new()
     // {
     //     ExportType = ExportType.HousingRents,
-    //     FileName = $"CASH1.dat",
+    //     FileName = "CASH1.dat",
     //     StartDateTime = new DateTime(2025, 07, 02, 17, 00, 00),
     //     EndDateTime = new DateTime(2025, 07, 04, 16, 59, 59),
     // },
     // new()
     // {
     //     ExportType = ExportType.HousingBenefitsOverPayments,
-    //     FileName = $"PAYMENTS.dat",
+    //     FileName = "PAYMENTS.dat",
     //     StartDateTime = new DateTime(2025, 07, 02, 17, 00, 00),
     //     EndDateTime = new DateTime(2025, 07, 04, 16, 59, 59),
     // },
     // new()
     // {
     //     ExportType = ExportType.CouncilTaxNNDR,
-    //     FileName = $"IWORLD.pay",
+    //     FileName = "IWORLD.pay",
+    //     StartDateTime = new DateTime(2025, 07, 02, 17, 00, 00),
+    //     EndDateTime = new DateTime(2025, 07, 04, 16, 59, 59),
+    // },
+    // new()
+    // {
+    //     ExportType = ExportType.SMEProfessional,
+    //     FileName = $"GBCLettings_{DateTime.Now:dd-MMM-yy}.csv",
     //     StartDateTime = new DateTime(2025, 07, 02, 17, 00, 00),
     //     EndDateTime = new DateTime(2025, 07, 04, 16, 59, 59),
     // },
     new()
     {
-        ExportType = ExportType.SMEProfessional,
-        FileName = $"GBCLettings_{DateTime.Now:dd-MMM-yy}.csv",
-        StartDateTime = new DateTime(2025, 07, 02, 17, 00, 00),
-        EndDateTime = new DateTime(2025, 07, 04, 16, 59, 59),
+        ExportType = ExportType.ParkingFines,
+        FileName = "CPTRAN.asc",
+        StartDateTime = new DateTime(2025, 06, 01, 17, 00, 00),
+        EndDateTime = new DateTime(2025, 06, 10, 16, 59, 59),
     },
     
 };
@@ -172,6 +179,7 @@ static IExportGenerator GetGenerator(ExportType exportType) => exportType switch
     ExportType.HousingBenefitsOverPayments => new HousingBenefitOverPaymentExportGenerator(),
     ExportType.CouncilTaxNNDR => new CouncilTaxNNDRExportGenerator(),
     ExportType.SMEProfessional => new SMEProfessionalExportGenerator(),
+    ExportType.ParkingFines => new ParkingFineExportGenerator(),
     // Add additional transformers here
     _ => throw new NotImplementedException()
 };
