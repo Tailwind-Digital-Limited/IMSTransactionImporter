@@ -1,25 +1,24 @@
 using CsvHelper;
-using CsvHelper.Configuration.Attributes;
 using System.Globalization;
 using CsvHelper.Configuration;
 using CsvHelper.TypeConversion;
-using IMSTransactionImporter.Classes;
 using IMSTransactionImporter.Interfaces;
+using LocalGovIMSClient.Models;
 
 namespace IMSTransactionImporter.Transformers;
 
 public class BailiffTransformer : ITransactionTransformer
 {
-    public IMSTransactionImport Transform(string fileContents)
+    public TransactionImportModel Transform(string fileContents)
     {
         // Parse CSV file
-        var bailiffTransactions = ParseCSV(fileContents);
+        var bailiffTransactions = ParseCsv(fileContents);
         
         // Convert rows to IMSTransactionImport
         var rows = bailiffTransactions.Select(Convert).ToList();
         
         // Create IMSTransactionImport
-        var import = new IMSTransactionImport
+        var import = new TransactionImportModel()
         {
             Rows = rows,
             ImportTypeId = 3,
@@ -29,19 +28,19 @@ public class BailiffTransformer : ITransactionTransformer
         return import;
     }
 
-    public static IMSProcessedTransaction Convert(BailiffTransaction bailiff)
+    public static ProcessedTransactionModel Convert(BailiffTransaction bailiff)
     {
-        var processedTransaction = new IMSProcessedTransaction
+        var processedTransaction = new ProcessedTransactionModel
         {
             Reference = bailiff.CustomerReference,
-            Amount = bailiff.Amount,
+            Amount = (double)bailiff.Amount,
             AccountReference = bailiff.CustomerReference,
             MopCode = "20",
             InternalReference = GenerateRandom16CharString(),
             PspReference = $"BLF-{DateTime.Now:yyMMdd}-{bailiff.RowNumber}",
             OfficeCode = "S",
-            EntryDate = DateTime.Now.ToString("O"),
-            TransactionDate = bailiff.TransactionDate.ToString("O"),
+            EntryDate = DateTimeOffset.Now,
+            TransactionDate = bailiff.TransactionDate,
             Narrative = $"{bailiff.LiabilityOrderNumber} (Liability order number)",
             // Set defaults
             VatRate = 0,
@@ -59,8 +58,6 @@ public class BailiffTransformer : ITransactionTransformer
             processedTransaction.VatAmount = processedTransaction.Amount - processedTransaction.Amount / (1 + processedTransaction.VatRate);
         }
         
-        
-
         return processedTransaction;
     }
 
@@ -87,7 +84,7 @@ public class BailiffTransformer : ITransactionTransformer
             .ToArray());
     }
     
-    private List<BailiffTransaction> ParseCSV(string fileContents)
+    private static List<BailiffTransaction> ParseCsv(string fileContents)
     {
         var config = new CsvConfiguration(CultureInfo.InvariantCulture)
         {
@@ -117,7 +114,7 @@ public class CustomDateTimeConverter : DateTimeConverter
 {
     public override object ConvertFromString(string text, IReaderRow row, MemberMapData memberMapData)
     {
-        return DateTime.ParseExact(text, "dd/MM/yyyy", CultureInfo.InvariantCulture);
+        return DateTimeOffset.ParseExact(text, "dd/MM/yyyy", CultureInfo.InvariantCulture);
     }
 }
 public sealed class BailiffTransactionMap : ClassMap<BailiffTransaction>
@@ -136,13 +133,13 @@ internal class FundDetails
 {
     
     public required string VatCode { get; set; }
-    public decimal VatRate { get; set; }
+    public float VatRate { get; set; }
     public string? FundCode { get; set; }
 }
 
 public class BailiffTransaction
 {
-    public DateTime TransactionDate { get; set; }
+    public DateTimeOffset TransactionDate { get; set; }
     public string? CustomerReference { get; set; }
     public decimal Amount { get; set; }
     public string? FundName { get; set; }

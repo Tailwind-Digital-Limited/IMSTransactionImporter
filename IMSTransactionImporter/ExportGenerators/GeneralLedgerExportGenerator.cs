@@ -147,7 +147,7 @@ public class GeneralLedgerExportGenerator : IExportGenerator
         {
             Year = CalculateYear(),
             Period = CalculatePeriod(),
-            Date = transaction.TransactionDate!.Value.ToString("dd/MM/yyyy"),
+            Date = DateTime.Now.ToString("dd/MM/yyyy"),
             Code = generalLedgerCode!,
             // net amount = amount - vat amount
             Amount = -netAmount,
@@ -164,7 +164,7 @@ public class GeneralLedgerExportGenerator : IExportGenerator
         {
             Year = CalculateYear(),
             Period = CalculatePeriod(),
-            Date = transaction.TransactionDate!.Value.ToString("dd/MM/yyyy"),
+            Date = DateTime.Now.ToString("dd/MM/yyyy"),
             Code = "Z840/L0013",
             // net amount = amount - vat amount
             Amount = (decimal) -transaction.VatAmount!.Value,
@@ -205,7 +205,7 @@ public class GeneralLedgerExportGenerator : IExportGenerator
         {
             Year = CalculateYear(),
             Period = CalculatePeriod(),
-            Date = transaction.TransactionDate!.Value.ToString("dd/MM/yyyy"),
+            Date = DateTime.Now.ToString("dd/MM/yyyy"),
             Code = "Z001/L0030", // if bank account number is 64787060 then code should be Z010/L0030
             // TODO: Check the import to see if we are capturing the bank account being used
 

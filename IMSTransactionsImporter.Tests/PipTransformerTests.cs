@@ -1,5 +1,5 @@
-using IMSTransactionImporter.Classes;
 using IMSTransactionImporter.Transformers;
+using LocalGovIMSClient.Models;
 
 namespace IMSTransactionsImporter.Tests;
 
@@ -25,7 +25,7 @@ public class PipTransformerTests
     public void SetFundCodeAndAccountReference_ShouldSetCorrectValues(string reference, string expectedFundCode, string expectedAccountRef)
     {
         // Arrange
-        var transaction = new IMSProcessedTransaction { Reference = reference };
+        var transaction = new ProcessedTransactionModel { Reference = reference };
 
         // Act
         _transformer.SetFundCodeAndAccountReference(transaction);
@@ -43,7 +43,7 @@ public class PipTransformerTests
     public void SetFundCodeAndAccountReference_WithInvalidInput_ShouldNotModifyTransaction(string reference)
     {
         // Arrange
-        var transaction = new IMSProcessedTransaction 
+        var transaction = new ProcessedTransactionModel 
         { 
             Reference = reference,
             FundCode = "original",
@@ -65,7 +65,7 @@ public class PipTransformerTests
     public void SetFundCodeAndAccountReference_WithNumericPos12_ShouldSetFundCodeToPos12Value(string reference, string expectedFundCode)
     {
         // Arrange
-        var transaction = new IMSProcessedTransaction { Reference = reference };
+        var transaction = new ProcessedTransactionModel { Reference = reference };
 
         // Act
         _transformer.SetFundCodeAndAccountReference(transaction);
@@ -78,7 +78,7 @@ public class PipTransformerTests
     public void SetFundCodeAndAccountReference_WithNonNumericPos12_ShouldNotSetFundCode()
     {
         // Arrange
-        var transaction = new IMSProcessedTransaction 
+        var transaction = new ProcessedTransactionModel 
         { 
             Reference = "98265029000x00950031019",
             FundCode = ""

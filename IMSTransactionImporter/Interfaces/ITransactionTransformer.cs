@@ -1,8 +1,9 @@
 using IMSTransactionImporter.Classes;
+using LocalGovIMSClient.Models;
 
 namespace IMSTransactionImporter.Interfaces;
 
 public interface ITransactionTransformer
 {
-    IMSTransactionImport Transform(string fileContents);
+    TransactionImportModel Transform(string fileContents);
 }

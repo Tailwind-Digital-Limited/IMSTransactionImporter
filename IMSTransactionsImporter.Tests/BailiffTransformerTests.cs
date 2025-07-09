@@ -18,7 +18,6 @@ public class BailiffTransformerTests
         string expectedFundCode)
     {
         // Arrange
-        var transformer = new BailiffTransformer();
         var bailiffTransaction = new BailiffTransaction
         {
             TransactionDate = DateTime.Parse(date),
@@ -35,16 +34,16 @@ public class BailiffTransformerTests
         // Assert
         Assert.NotNull(result);
         Assert.Equal(customerRef, result.Reference);
-        Assert.Equal(amount, result.Amount);
+        Assert.Equal((double)amount, result.Amount);
         Assert.Equal("20", result.MopCode);
         Assert.Equal("S", result.OfficeCode);
         Assert.Equal(16, result.InternalReference.Length);
         Assert.Equal($"{liabilityNumber} (Liability order number)", result.Narrative);
         Assert.Equal(expectedFundCode, result.FundCode);
         Assert.Equal("3", result.VatCode);
-        Assert.Equal(0m, result.VatRate);
-        Assert.Equal(0m, result.VatAmount);
-        Assert.StartsWith($"Bailiff-{DateTime.Now:yyyyMMdd}-{rowNumber}", result.PspReference);
-        Assert.Equal(DateTime.Parse(date).ToString("O"), result.TransactionDate);
+        Assert.Equal(0, result.VatRate);
+        Assert.Equal(0, result.VatAmount);
+        Assert.StartsWith($"BLF-{DateTime.Now:yyMMdd}-{rowNumber}", result.PspReference);
+        Assert.Equal(DateTimeOffset.Parse(date), result.TransactionDate);
     }
 }

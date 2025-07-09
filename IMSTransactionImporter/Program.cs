@@ -1,13 +1,11 @@
 ﻿// See https://aka.ms/new-console-template for more information
-
-using System.Text;
-using System.Text.Json;
 using IMSTransactionImporter.Classes;
 using IMSTransactionImporter.ExportGenerators;
 using IMSTransactionImporter.Interfaces;
 using IMSTransactionImporter.Settings;
 using IMSTransactionImporter.Transformers;
 using LocalGovIMSClient;
+using LocalGovIMSClient.Models;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Kiota.Abstractions.Authentication;
 using Microsoft.Kiota.Http.HttpClientLibrary;
@@ -27,21 +25,21 @@ var imports = new List<IMSImport>
     //     ImportType = ImportType.PIP,
     //     FilePath = "CSS_PIP_510_250516081048.csv"
     // }
-    // new()
-    // {
-    //     ImportType = ImportType.Bailiff,
-    //     FilePath = "Payments NDR.txt"
-    // },
-    // new()
-    // {
-    //     ImportType = ImportType.Bailiff,
-    //     FilePath = "Payments CT.txt"
-    // },
-    // new()
-    // {
-    //     ImportType = ImportType.Bailiff,
-    //     FilePath = "Payments PCN.txt"
-    // }
+    new()
+    {
+        ImportType = ImportType.Bailiff,
+        FilePath = "Payments NDR.txt"
+    },
+    new()
+    {
+        ImportType = ImportType.Bailiff,
+        FilePath = "Payments CT.txt"
+    },
+    new()
+    {
+        ImportType = ImportType.Bailiff,
+        FilePath = "Payments PCN.txt"
+    }
 };
 
 foreach (var imsImport in imports)
@@ -56,11 +54,11 @@ foreach (var imsImport in imports)
 
     // Transform Data
     Console.WriteLine($"Transforming data");
-    var imsTransactionImport = transformer.Transform(fileContents);
+    var transactionImportModel = transformer.Transform(fileContents);
 
     // Send request to IMS
     Console.WriteLine($"Sending data to IMS API");
-    var success = await SendDataToIMS(apiSettings.ApiUrl, apiSettings.IMSApiKey, imsTransactionImport);
+    var success = await SendDataToIMS(apiClient, transactionImportModel);
 
     // Print result
     if (success)
@@ -118,13 +116,13 @@ var exports = new List<IMSExport>
     //     StartDateTime = new DateTime(2025, 07, 02, 17, 00, 00),
     //     EndDateTime = new DateTime(2025, 07, 04, 16, 59, 59),
     // },
-    new()
-    {
-        ExportType = ExportType.ParkingFines,
-        FileName = "CPTRAN.asc",
-        StartDateTime = new DateTime(2025, 06, 01, 17, 00, 00),
-        EndDateTime = new DateTime(2025, 06, 10, 16, 59, 59),
-    },
+    // new()
+    // {
+    //     ExportType = ExportType.ParkingFines,
+    //     FileName = "CPTRAN.asc",
+    //     StartDateTime = new DateTime(2025, 06, 01, 17, 00, 00),
+    //     EndDateTime = new DateTime(2025, 06, 10, 16, 59, 59),
+    // },
     
 };
 
@@ -184,27 +182,15 @@ static IExportGenerator GetGenerator(ExportType exportType) => exportType switch
     _ => throw new NotImplementedException()
 };
 
-async Task<bool> SendDataToIMS(string url, string apiKey, IMSTransactionImport import)
+async Task<bool> SendDataToIMS(LocalGovIMSAPIClient client, TransactionImportModel import)
 {
-    if (import.NumberOfRows > 0)
+    if (import.Rows?.Count > 0)
     {
-        // Create the content
-        var jsonContent = JsonSerializer.Serialize(import, new JsonSerializerOptions
-        {
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-        });
-        var content = new StringContent(jsonContent, Encoding.UTF8, "application/json");
-
-        // Create the HTTP client
-        var httpClient = new HttpClient();
-        httpClient.DefaultRequestHeaders.Add("Accept", "application/json");
-        httpClient.DefaultRequestHeaders.Add("X-API-Key", apiKey);
-
+        import.NumberOfRows = import.Rows.Count;
         // Send POST request
-        var response = await httpClient.PostAsync(url, content);
-        return response.IsSuccessStatusCode;
+        await client.Api.TransactionImport.PostAsync(import);
+        return true;
     }
-
     return false;
 }
 

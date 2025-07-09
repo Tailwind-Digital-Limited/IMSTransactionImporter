@@ -6,21 +6,22 @@ using CsvHelper.TypeConversion;
 using IMSTransactionImporter.Classes;
 using IMSTransactionImporter.Extensions;
 using IMSTransactionImporter.Interfaces;
+using LocalGovIMSClient.Models;
 
 namespace IMSTransactionImporter.Transformers;
 
 public class PIPTransformer : ITransactionTransformer
 {
-    public IMSTransactionImport Transform(string fileContents)
+    public TransactionImportModel Transform(string fileContents)
     {
         // Parse CSV file
-        var pipTransactions = ParseCSV(fileContents);
+        var pipTransactions = ParseCsv(fileContents);
         
         // Convert rows to IMSTransactionImport
         var rows = pipTransactions.Select(Convert).ToList();
         
         // Create IMSTransactionImport
-        var import = new IMSTransactionImport
+        var import = new TransactionImportModel
         {
             Rows = rows,
             ImportTypeId = 1,
@@ -30,9 +31,9 @@ public class PIPTransformer : ITransactionTransformer
         return import;
     }
 
-    private IMSProcessedTransaction Convert(PIPTransaction pip)
+    private ProcessedTransactionModel Convert(PIPTransaction pip)
     {
-        var processedTransaction = new IMSProcessedTransaction
+        var processedTransaction = new ProcessedTransactionModel
         {
             Reference = pip.ReferenceNumber,
             Amount = pip.Amount,
@@ -40,8 +41,8 @@ public class PIPTransformer : ITransactionTransformer
             InternalReference = pip.PspReference,
             PspReference = $"PIP-{DateTime.Now:yyyyMMdd}-{pip.ContinuousAuditNumber}",
             OfficeCode = "S",
-            EntryDate = DateTime.Now.ToString("O"),
-            TransactionDate = pip.TransactionDate.ToString("O"),
+            EntryDate = DateTimeOffset.Now,
+            TransactionDate = pip.TransactionDate,
             VatCode = "2",
             VatRate = 0,
             VatAmount = 0,
@@ -55,7 +56,7 @@ public class PIPTransformer : ITransactionTransformer
 
     private static readonly string[] FundCode1References = ["01", "02", "03", "04", "05"];
 
-    public void SetFundCodeAndAccountReference(IMSProcessedTransaction processedTransaction)
+    public void SetFundCodeAndAccountReference(ProcessedTransactionModel processedTransaction)
     {
         var accountReference = "";
         var fundCode = "";
@@ -112,13 +113,13 @@ public class PIPTransformer : ITransactionTransformer
 
     
 
-    private string ReplaceLettersWithZero(string input)
+    private static string ReplaceLettersWithZero(string input)
     {
         // Assuming this method exists - implementing it for completeness
         return string.Concat(input.Select(c => char.IsLetter(c) ? '0' : c));
     }
     
-    private List<PIPTransaction> ParseCSV(string fileContents)
+    private static List<PIPTransaction> ParseCsv(string fileContents)
     {
         // Split the content into lines
         var lines = fileContents.Split(["\r\n", "\n"], StringSplitOptions.None);
@@ -147,14 +148,14 @@ public class PIPTransaction
 {
     public string TransactionStatus { get; set; }
     public string TransactionType { get; set; }
-    public DateTime TransactionDate { get; set; }
+    public DateTimeOffset TransactionDate { get; set; }
     public int ContinuousAuditNumber { get; set; }
     public int GroupNumber { get; set; }
     public string ClientId { get; set; }
     public string LineId { get; set; }
     public string ReferenceNumber { get; set; }
-    public decimal Amount { get; set; }
-    public decimal VATAmount { get; set; }
+    public double Amount { get; set; }
+    public float VATAmount { get; set; }
     public int PartialBankAccount { get; set; }
     public int BankSortCode { get; set; }
     public string BACSReference { get; set; }
@@ -231,10 +232,10 @@ public class CustomDateConverter : DefaultTypeConverter
         if (string.IsNullOrEmpty(text)) return null;
 
         // Parse date in format "ddMMyyy HHmmss"
-        if (DateTime.TryParseExact(text, "ddMMyyyy HHmmss",
+        if (DateTimeOffset.TryParseExact(text, "ddMMyyyy HHmmss",
                 CultureInfo.InvariantCulture,
                 DateTimeStyles.None,
-                out DateTime result))
+                out DateTimeOffset result))
         {
             return result;
         }
