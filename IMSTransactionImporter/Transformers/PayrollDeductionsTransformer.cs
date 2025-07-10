@@ -7,47 +7,46 @@ using LocalGovIMSClient.Models;
 
 namespace IMSTransactionImporter.Transformers;
 
-public class BailiffTransformer : ITransactionTransformer
+public class PayrollDeductionsTransformer : ITransactionTransformer
 {
     public TransactionImportModel Transform(string fileContents)
     {
         // Parse CSV file
-        var bailiffTransactions = ParseCsv(fileContents);
+        var payrollDeductionTransactions = ParseCsv(fileContents);
         
         // Convert rows to IMSTransactionImport
-        var rows = bailiffTransactions.Select(Convert).ToList();
+        var rows = payrollDeductionTransactions.Select(Convert).ToList();
         
         // Create IMSTransactionImport
         var import = new TransactionImportModel()
         {
             Rows = rows,
-            ImportTypeId = 3,
-            Notes = "Imported from Bailiff File"
+            ImportTypeId = 4,
+            Notes = "Imported from Payroll Deductions File"
         };
         
         return import;
     }
 
-    public static ProcessedTransactionModel Convert(BailiffTransaction bailiff)
+    public static ProcessedTransactionModel Convert(PayrollDeductionTransaction payrollDeduction)
     {
         var processedTransaction = new ProcessedTransactionModel
         {
-            Reference = bailiff.CustomerReference,
-            Amount = (double)bailiff.Amount,
-            AccountReference = bailiff.CustomerReference,
-            MopCode = "20",
+            Amount = (double)payrollDeduction.Amount,
+            AccountReference = payrollDeduction.CustomerReference,
+            MopCode = "51",
             InternalReference = GenerateRandom16CharString(),
-            PspReference = $"BLF-{DateTime.Now:yyMMdd}-{bailiff.RowNumber}",
+            PspReference = $"PYD-{DateTime.Now:yyMMdd}-{payrollDeduction.RowNumber}",
             OfficeCode = "S",
             EntryDate = DateTimeOffset.Now,
-            TransactionDate = bailiff.TransactionDate,
-            Narrative = $"{bailiff.LiabilityOrderNumber} (Liability order number)",
+            TransactionDate = payrollDeduction.TransactionDate,
+            Narrative = $"{payrollDeduction.EmployeeNameNumber}",
             // Set defaults
             VatRate = 0,
             VatAmount = 0,
             VatCode = "1",
         };
-        var fundDetails = GetFundDetails(bailiff.FundName);
+        var fundDetails = GetFundDetails(payrollDeduction.FundName);
         if (fundDetails != null)
         {
             processedTransaction.VatCode = fundDetails.VatCode;
@@ -62,15 +61,14 @@ public class BailiffTransformer : ITransactionTransformer
     }
 
     
-
     // Leaving this for extensibility even though currently all funds have the same vat code and rate.
     private static FundDetails? GetFundDetails(string? bailiffFundName) => bailiffFundName switch
     {
         "Council Tax" => new FundDetails{FundCode = "2", VatCode = "3", VatRate = 0},
-        "NDR" => new FundDetails{FundCode = "5", VatCode = "3", VatRate = 0},
-        "Benefit Overpayment" => new FundDetails{FundCode = "6", VatCode = "3", VatRate = 0},
-        "Sundry Debt" => new FundDetails{FundCode = "7", VatCode = "3", VatRate = 0},
-        "PCN" => new FundDetails{FundCode = "9", VatCode = "3", VatRate = 0},
+        "HB Overpayment" => new FundDetails{FundCode = "6", VatCode = "3", VatRate = 0},
+        "Housing Rents" => new FundDetails{FundCode = "8", VatCode = "3", VatRate = 0},
+        "Income" => new FundDetails{FundCode = "10", VatCode = "3", VatRate = 0},
+        
         _ => null
     };
 
@@ -84,7 +82,7 @@ public class BailiffTransformer : ITransactionTransformer
             .ToArray());
     }
     
-    private static List<BailiffTransaction> ParseCsv(string fileContents)
+    private static List<PayrollDeductionTransaction> ParseCsv(string fileContents)
     {
         var config = new CsvConfiguration(CultureInfo.InvariantCulture)
         {
@@ -95,12 +93,12 @@ public class BailiffTransformer : ITransactionTransformer
         };
         using var reader = new StringReader(fileContents);
         using var csv = new CsvReader(reader, config);
-        csv.Context.RegisterClassMap<BailiffTransactionMap>();
+        csv.Context.RegisterClassMap<PayrollDeductionsMap>();
 
-        var transactions = new List<BailiffTransaction>();
+        var transactions = new List<PayrollDeductionTransaction>();
         var rowNumber = 1;
     
-        foreach (var record in csv.GetRecords<BailiffTransaction>())
+        foreach (var record in csv.GetRecords<PayrollDeductionTransaction>())
         {
             record.RowNumber = rowNumber++;
             transactions.Add(record);
@@ -110,34 +108,33 @@ public class BailiffTransformer : ITransactionTransformer
     }
 }
 
-public class CustomDateTimeConverter : DateTimeConverter
+public class PayrollDeductionsDateTimeConverter : DateTimeConverter
 {
     public override object ConvertFromString(string text, IReaderRow row, MemberMapData memberMapData)
     {
         return DateTimeOffset.ParseExact(text, "dd/MM/yyyy", CultureInfo.InvariantCulture);
     }
 }
-public sealed class BailiffTransactionMap : ClassMap<BailiffTransaction>
+public sealed class PayrollDeductionsMap : ClassMap<PayrollDeductionTransaction>
 {
-    public BailiffTransactionMap()
+    public PayrollDeductionsMap()
     {
-        Map(m => m.TransactionDate).Index(0).TypeConverter<CustomDateTimeConverter>();
+        Map(m => m.TransactionDate).Index(0).TypeConverter<PayrollDeductionsDateTimeConverter>();
         Map(m => m.CustomerReference).Index(1);
         Map(m => m.Amount).Index(2).TypeConverter<DecimalConverter>();
         Map(m => m.FundName).Index(3);
-        Map(m => m.LiabilityOrderNumber).Index(4);
+        Map(m => m.PayElement).Index(4);
+        Map(m => m.EmployeeNameNumber).Index(5);
     }
 }
 
-public class BailiffTransaction
+public class PayrollDeductionTransaction
 {
     public DateTimeOffset TransactionDate { get; set; }
     public string? CustomerReference { get; set; }
     public decimal Amount { get; set; }
     public string? FundName { get; set; }
-    public string? LiabilityOrderNumber { get; set; }
+    public string? PayElement { get; set; }
+    public string? EmployeeNameNumber { get; set; }
     public int RowNumber { get; set; }
 }
-
-
-

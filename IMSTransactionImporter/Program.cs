@@ -25,20 +25,25 @@ var imports = new List<IMSImport>
     //     ImportType = ImportType.PIP,
     //     FilePath = "CSS_PIP_510_250516081048.csv"
     // }
+    // new()
+    // {
+    //     ImportType = ImportType.Bailiff,
+    //     FilePath = "Payments NDR.txt"
+    // },
+    // new()
+    // {
+    //     ImportType = ImportType.Bailiff,
+    //     FilePath = "Payments CT.txt"
+    // },
+    // new()
+    // {
+    //     ImportType = ImportType.Bailiff,
+    //     FilePath = "Payments PCN.txt"
+    // }
     new()
     {
-        ImportType = ImportType.Bailiff,
-        FilePath = "Payments NDR.txt"
-    },
-    new()
-    {
-        ImportType = ImportType.Bailiff,
-        FilePath = "Payments CT.txt"
-    },
-    new()
-    {
-        ImportType = ImportType.Bailiff,
-        FilePath = "Payments PCN.txt"
+        ImportType = ImportType.PayrollDeductions,
+        FilePath = "Deductions.txt"
     }
 };
 
@@ -164,6 +169,7 @@ static ITransactionTransformer GetTransformer(ImportType importType) => importTy
 {
     ImportType.PIP => new PIPTransformer(),
     ImportType.Bailiff => new BailiffTransformer(),
+    ImportType.PayrollDeductions => new PayrollDeductionsTransformer(),
     ImportType.BankFile => throw new NotImplementedException(),
     // Add additional transformers here
     _ => throw new NotImplementedException()

@@ -4,5 +4,6 @@ public enum ImportType
 {
     PIP,
     BankFile,
-    Bailiff
+    Bailiff,
+    PayrollDeductions
 }
